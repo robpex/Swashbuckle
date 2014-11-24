@@ -6,10 +6,6 @@ using Swashbuckle.Application;
 using Swashbuckle.Dummy.Controllers;
 using Swashbuckle.Swagger;
 using System;
-using System.Net.Http;
-using System.Web.Http;
-using System.Web.Http.Hosting;
-using System.Web.Http.Routing;
 
 namespace Swashbuckle.Tests.SwaggerSpec
 {
@@ -263,27 +259,6 @@ namespace Swashbuckle.Tests.SwaggerSpec
                                     produces = new []{ "application/json", "text/json", "application/xml", "text/xml" },
                                     consumes = new object[]{},
                                     type = "Product"
-                                },
-                                new
-                                {
-                                    method = "POST",
-                                    summary = "",
-                                    nickname = "Products_TestActionName",
-                                    parameters = new object[]
-                                    {
-                                        new
-                                        {
-                                            paramType = "path",
-                                            name = "id",
-                                            required = true,
-                                            type = "integer",
-                                            format = "int32"
-                                        }
-                                    },
-                                    responseMessages = new object[]{},
-                                    produces = new []{ "application/json", "text/json", "application/xml", "text/xml" },
-                                    consumes = new object[]{},
-                                    type = "Product"
                                 }
                            }
                         },
@@ -308,7 +283,7 @@ namespace Swashbuckle.Tests.SwaggerSpec
         {
             // i.e. route params that are not included in the action signature
             SetUpCustomRouteFor<ProductsController>("{apiVersion}/products");
-
+            
             var versionParam = Get<JObject>("http://tempuri.org/swagger/api-docs/Products")
                 .SelectToken("apis[0].operations[0].parameters[0]");
 
@@ -476,10 +451,10 @@ namespace Swashbuckle.Tests.SwaggerSpec
                 },
                 new
                 {
-                   paramType = "query",
-                   name = "Zip",
-                   required = false,
-                   type = "string"
+                    paramType = "query",
+                    name = "Zip",
+                    required = false,
+                    type = "string"
                 },
                 new
                 {
@@ -496,17 +471,26 @@ namespace Swashbuckle.Tests.SwaggerSpec
                     type = "number",
                     format = "double"
                 },
-                new 
+                new
                 {
                     paramType = "query",
                     name = "TransType",
                     required = false,
                     type = "string",
-                    @enum = new[] { "TRANSFER", "NETWORK" }
+                    @enum = new[] {"TRANSFER", "NETWORK"}
                 }
             });
 
             Assert.AreEqual(expectedParams.ToString(), declarationParams.ToString());
+        }
+
+        public void It_should_handle_actionname_attribute()
+        {
+            SetUpCustomRouteFor<CustomActionNamesController>("{action}/{id}");
+
+            var declaration = Get<JObject>("http://tempuri.org/swagger/api-docs/CustomActionNames");
+            var api = declaration.SelectToken("apis[0]");
+            Assert.AreEqual("/TestActionName/{id}", (string)api["path"]);
         }
 
 
